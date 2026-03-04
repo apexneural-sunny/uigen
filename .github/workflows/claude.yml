@@ -51,12 +51,12 @@ jobs:
           # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
           # or https://code.claude.com/docs/en/cli-reference for available options
           # claude_args: '--allowed-tools Bash(gh pr:*)'
-          custom_instructions: |
-            The project is alredy setup with all dependencies installed.
-            The server is already running at localhost:3000. Logs from it are beign written to logs.txt. 
-            If needed, you can query the db with the 'sqlite3' command. 
+          prompt: |
+            The project is already setup with all dependencies installed.
+            The server is already running at localhost:3000. Logs from it are being written to logs.txt.
+            If needed, you can query the db with the 'sqlite3' command.
             If needed, use the mcp__playwright set of tools to launch a browser and interact with the app.
-          mcp_config: |
+          settings: |
             {
               "mcpServers": {
                 "playwright": {
@@ -67,9 +67,18 @@ jobs:
                     "localhost:3000;cdn.tailwindcss.com;esm.sh"
                   ]
                 }
-              }
+              },
+              "allowedTools": [
+                "Bash(npm:*)",
+                "Bash(sqlite3:*)",
+                "mcp__playwright__browser_snapshot",
+                "mcp__playwright__browser_click",
+                "mcp__playwright__browser_navigate",
+                "mcp__playwright__browser_type",
+                "mcp__playwright__browser_take_screenshot",
+                "mcp__playwright__browser_wait_for"
+              ]
             }
-          allowed_tools: "Bash(npm:*),Bash(sqlite3:*),mcp__playwright__browser_snapshot,mcp__playwright__browser_click,..."
 
 
 
