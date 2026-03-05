@@ -155,7 +155,7 @@ export function FileSystemProvider({
             if (path && file_text !== undefined) {
               const result = fileSystem.createFileWithParents(path, file_text);
               if (!result.startsWith("Error:")) {
-                createFile(path, file_text);
+                triggerRefresh();
               }
             }
             break;
@@ -199,16 +199,13 @@ export function FileSystemProvider({
 
           case "delete":
             if (path) {
-              const success = fileSystem.deleteFile(path);
-              if (success) {
-                deleteFile(path);
-              }
+              deleteFile(path);
             }
             break;
         }
       }
     },
-    [fileSystem, createFile, updateFile, deleteFile, renameFile]
+    [fileSystem, triggerRefresh, updateFile, deleteFile, renameFile]
   );
 
   return (
