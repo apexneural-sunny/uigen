@@ -19,18 +19,19 @@ jobs:
       (github.event_name == 'issues' && (contains(github.event.issue.body, '@claude') || contains(github.event.issue.title, '@claude')))
     runs-on: ubuntu-latest
     permissions:
-      contents: read
-      pull-requests: read
-      issues: read
+      contents: write
+      pull-requests: write
+      issues: write
       id-token: write
-      actions: read # Required for Claude to read CI results on PRs
+      actions: read
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
+
       - name: Project Setup
-        run: | 
+        run: |
           npm run setup
           npm run dev:daemon
 
@@ -39,23 +40,6 @@ jobs:
         uses: anthropics/claude-code-action@v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-
-          # This is an optional setting that allows Claude to read CI results on PRs
-          additional_permissions: |
-            actions: read
-
-          # Optional: Give a custom prompt to Claude. If this is not specified, Claude will perform the instructions specified in the comment that tagged it.
-          # prompt: 'Update the pull request description to include a summary of changes.'
-
-          # Optional: Add claude_args to customize behavior and configuration
-          # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
-          # or https://code.claude.com/docs/en/cli-reference for available options
-          # claude_args: '--allowed-tools Bash(gh pr:*)'
-          prompt: |
-            The project is already setup with all dependencies installed.
-            The server is already running at localhost:3000. Logs from it are being written to logs.txt.
-            If needed, you can query the db with the 'sqlite3' command.
-            If needed, use the mcp__playwright set of tools to launch a browser and interact with the app.
           settings: |
             {
               "mcpServers": {
@@ -69,7 +53,7 @@ jobs:
                 }
               },
               "allowedTools": [
-                "Bash(npm:*)",
+                "Bash(npm run:*)",
                 "Bash(sqlite3:*)",
                 "mcp__playwright__browser_snapshot",
                 "mcp__playwright__browser_click",
@@ -79,6 +63,3 @@ jobs:
                 "mcp__playwright__browser_wait_for"
               ]
             }
-
-
-
