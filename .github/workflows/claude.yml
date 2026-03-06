@@ -30,6 +30,19 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Clean up stale Claude branches
+        run: |
+          ISSUE_NUM="${{ github.event.issue.number || github.event.pull_request.number }}"
+          if [ -n "$ISSUE_NUM" ]; then
+            git ls-remote --heads origin "claude/issue-${ISSUE_NUM}-*" \
+              | awk '{print $2}' | sed 's|refs/heads/||' \
+              | while read -r branch; do
+                  echo "Deleting stale branch: $branch"
+                  git push origin --delete "$branch" || true
+                done
+          fi
+        continue-on-error: true
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -50,11 +63,13 @@ jobs:
 
       - name: Run Claude Code
         id: claude
-        uses: anthropics/claude-code-action@v1
+        uses: anthropics/claude-code-action@beta
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          settings: |
+          allowed_tools: |-
+            Bash(npm run:*),Bash(sqlite3:*),mcp__playwright__browser_snapshot,mcp__playwright__browser_click,mcp__playwright__browser_navigate,mcp__playwright__browser_type,mcp__playwright__browser_take_screenshot,mcp__playwright__browser_wait_for
+          mcp_config: |-
             {
               "mcpServers": {
                 "playwright": {
@@ -65,15 +80,5 @@ jobs:
                     "localhost:3000;cdn.tailwindcss.com;esm.sh"
                   ]
                 }
-              },
-              "allowedTools": [
-                "Bash(npm run:*)",
-                "Bash(sqlite3:*)",
-                "mcp__playwright__browser_snapshot",
-                "mcp__playwright__browser_click",
-                "mcp__playwright__browser_navigate",
-                "mcp__playwright__browser_type",
-                "mcp__playwright__browser_take_screenshot",
-                "mcp__playwright__browser_wait_for"
-              ]
+              }
             }
